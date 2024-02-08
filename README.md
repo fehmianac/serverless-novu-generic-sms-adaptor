@@ -1,0 +1,1 @@
+# serverless-novu-netgsm-adaptor
