@@ -28,6 +28,7 @@ public class NetGsmSmsProvider : ISmsProvider
         var request = new HttpRequestMessage(HttpMethod.Get, _settings.NetGsm.BaseUrl + url);
         var response = await _httpClient.SendAsync(request, cancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        Console.WriteLine(responseContent);
         return responseContent.StartsWith("00");
     }
 }

@@ -1,5 +1,7 @@
 using FunctionHandler.Contract;
 using FunctionHandler.Options;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace FunctionHandler.Service;
 
@@ -35,6 +37,7 @@ public class SmsSender : ISmsSender
     public async Task<bool> SendAsync(string to, string from, string message,
         CancellationToken cancellationToken = default)
     {
+        Console.WriteLine(JsonSerializer.Serialize(_settings));
         var trimmedTo = to.TrimStart('+');
         var providerByCountyCode =
             _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Any(x => trimmedTo.StartsWith(x)));
