@@ -56,10 +56,12 @@ public class Entrypoint
         if (request.Body == null)
         {
             Console.WriteLine("Response Api Key");
-            var responsePayload = JsonSerializer.Serialize(new ApiKeyResponse
+            var responsePayload = JsonSerializer.Serialize(new
             {
-                Authorization = apiKey
-                
+                Data = new ApiKeyResponse
+                {
+                    Authorization = apiKey
+                }
             });
             Console.WriteLine(responsePayload);
             return new APIGatewayHttpApiV2ProxyResponse
