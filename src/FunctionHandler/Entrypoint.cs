@@ -37,6 +37,7 @@ public class Entrypoint
     public async Task<APIGatewayHttpApiV2ProxyResponse> Handler(APIGatewayHttpApiV2ProxyRequest request,
         ILambdaContext context)
     {
+        Console.WriteLine(JsonSerializer.Serialize(request));
         var apiKey = "";
         if (request.Headers.TryGetValue("x-api-key", out var value))
         {
