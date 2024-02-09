@@ -58,7 +58,7 @@ public class Entrypoint
             Console.WriteLine("Response Api Key");
             var responsePayload = JsonSerializer.Serialize(new ApiKeyResponse
             {
-                ApiKey = apiKey
+                Authorization = apiKey
                 
             });
             Console.WriteLine(responsePayload);
