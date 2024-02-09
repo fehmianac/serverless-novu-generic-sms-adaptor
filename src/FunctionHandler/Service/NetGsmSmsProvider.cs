@@ -29,6 +29,7 @@ public class NetGsmSmsProvider : ISmsProvider
         var response = await _httpClient.SendAsync(request, cancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
         Console.WriteLine(responseContent);
+        Console.WriteLine( _settings.NetGsm.BaseUrl + url);
         return responseContent.StartsWith("00");
     }
 }
