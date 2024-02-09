@@ -1,7 +1,5 @@
 # Serverless Novu Generic SMS Adaptor
 
-![Project Logo or Banner Image]
-
 This project serves as an adapter for integrating the Novu SMS provider into a serverless environment. It supports NetGSM and Twilio as SMS providers and is designed to operate on AWS using Gateway, Lambda, and AWS Parameter Store for configuration.
 
 ## Features
