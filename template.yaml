@@ -132,7 +132,7 @@ Resources:
     Properties:
       Name: /generic-sms-adapter/Settings
       Type: String
-      Value: '{"ApiKey":"api-key","DefaultProvider":"0","Twilio":{"AccountSid":"account-sid","AuthToken":"auth-token","IsEnabled":true,"AllowedCountryCodes":[]},"NetGsm":{"BaseUrl":"https://api.netgsm.com.tr/","Username":"","Password":"","IsEnabled":true,"AllowedCountryCodes":[]}}'
+      Value: '{"ApiKey":"api-key","DefaultProvider":"NetGsm","Twilio":{"AccountSid":"account-sid","AuthToken":"auth-token","IsEnabled":true,"AllowedCountryCodes":[]},"NetGsm":{"BaseUrl":"https://api.netgsm.com.tr/","Username":"","Password":"","IsEnabled":true,"AllowedCountryCodes":[]}}'
       Description: GenericSmsAdapterApiSettings
 
 Outputs:
