@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Generic SMS Adapter
+
+  SAM Template for the Generic SMS Adapter
+
+Parameters:
+  CodeBucketName:
+    Type: String
+    Default: 'aws-websockets-adaptor'
+    Description: (Required) The name of the S3 bucket where the Lambda function code is stored. Minimum 3 characters
+
+Resources:
+  GenericSmsAdapterApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: generic-sms-adapter-api
+      ProtocolType: HTTP
+
+  ProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref GenericSmsAdapterApi
+      RouteKey: 'POST /send'
+      AuthorizationType: NONE
+      OperationName: ApiEndpoints
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ProxyRouteAnyMethod
+  
+  ProxyRouteAnyMethod:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref GenericSmsAdapterApi
+      PayloadFormatVersion: '2.0'
+      Description: ProxyRoute Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenericSmsAdapterApiLambdaFunction.Arn}/invocations
+  
+  
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ProxyRoute
+    Properties:
+      ApiId: !Ref GenericSmsAdapterApi
+  
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: prod
+      Description: Prod Stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref GenericSmsAdapterApi
+  
+  
+  GenericSmsAdapterApiLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: GenericSmsAdapterApiLambdaFunction
+      CodeUri:
+        Bucket: !Ref CodeBucketName
+        Key: deploy.zip
+      Handler: FunctionHandler::FunctionHandler.Entrypoint::Handler
+      Role: !GetAtt GenericSmsAdapterApiLambdaFunctionExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 180
+      Runtime: dotnet6
+  
+  GenericSmsAdapterApiLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/GenericSmsAdapterApiLambdaFunction"
+      RetentionInDays: 14
+  
+  GenericSmsAdapterApiLambdaFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - GenericSmsAdapterApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GenericSmsAdapterApiLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  GenericSmsAdapterApiLambdaFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: allowLambdaLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: allowParameterStore
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParametersByPath
+                Resource: '*'
+
+        - PolicyName: allowS3AsAdmin
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: '*'
+  
+  
+  GenericSmsAdapterApiSettings:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /generic-sms-adapter/Settings
+      Type: String
+      Value: '{"ApiKey":"api-key","DefaultProvider":"0","Twilio":{"AccountSid":"account-sid","AuthToken":"auth-token","IsEnabled":true,"AllowedCountryCodes":[]},"NetGsm":{"BaseUrl":"https://api.netgsm.com.tr/","Username":"","Password":"","IsEnabled":true,"AllowedCountryCodes":[]}}'
+      Description: GenericSmsAdapterApiSettings
+
+Outputs:
+  GenericSmsAdapterApiURI:
+    Description: "The Rest URI to connect to"
+    Value: !Join [ '', [ 'https://', !Ref GenericSmsAdapterApi, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/','prod' ] ]
