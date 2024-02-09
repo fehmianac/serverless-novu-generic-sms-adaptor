@@ -59,10 +59,12 @@ public class Entrypoint
             var responsePayload = JsonSerializer.Serialize(new ApiKeyResponse
             {
                 ApiKey = apiKey
+                
             });
+            Console.WriteLine(responsePayload);
             return new APIGatewayHttpApiV2ProxyResponse
             {
-                StatusCode = 400,
+                StatusCode = 200,
                 Body = responsePayload,
             };
         }
