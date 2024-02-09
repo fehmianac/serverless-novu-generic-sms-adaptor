@@ -60,7 +60,7 @@ public class Entrypoint
             {
                 data = new ApiKeyResponse
                 {
-                    Authorization = apiKey
+                    ApiKey = apiKey
                 }
             });
             Console.WriteLine(responsePayload);

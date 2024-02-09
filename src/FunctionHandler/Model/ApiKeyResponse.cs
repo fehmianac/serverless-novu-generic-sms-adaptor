@@ -4,6 +4,6 @@ namespace FunctionHandler.Model;
 
 public class ApiKeyResponse
 {
-    [JsonPropertyName("Authorization")]
-    public string Authorization { get; set; } = default!;
+    [JsonPropertyName("x-api-key")]
+    public string ApiKey { get; set; } = default!;
 }
