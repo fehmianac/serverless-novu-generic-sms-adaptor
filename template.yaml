@@ -69,7 +69,7 @@ Resources:
       Role: !GetAtt GenericSmsAdapterApiLambdaFunctionExecutionRole.Arn
       MemorySize: 512
       Timeout: 180
-      Runtime: dotnet6
+      Runtime: dotnet8
   
   GenericSmsAdapterApiLambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
