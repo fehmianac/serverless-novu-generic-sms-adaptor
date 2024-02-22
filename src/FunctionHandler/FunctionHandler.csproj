@@ -11,8 +11,8 @@
     <ItemGroup>
         <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.0" />
         <PackageReference Include="Amazon.Lambda.Core" Version="2.2.0" />
-        <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.0" />
-        <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.302.3" />
-        <PackageReference Include="Twilio" Version="6.16.1" />
+        <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.1" />
+        <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.303" />
+        <PackageReference Include="Twilio" Version="6.18.0" />
     </ItemGroup>
 </Project>
