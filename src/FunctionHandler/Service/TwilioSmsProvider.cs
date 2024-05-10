@@ -34,6 +34,8 @@ public class TwilioSmsProvider : ISmsProvider
             to: new Twilio.Types.PhoneNumber(to)
         );
         
+        Console.WriteLine("Twilio Message Sid: " + twilioMessage.Sid);
+        
         return !string.IsNullOrEmpty(twilioMessage.Sid);
     }
 }

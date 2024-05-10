@@ -42,10 +42,11 @@ public class SmsSender : ISmsSender
         var providerByCountyCode =
             _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Any(x => trimmedTo.StartsWith(x)));
 
+        if (providerByCountyCode == null)
+            providerByCountyCode = _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Contains("*"));
+
         if (providerByCountyCode != null)
-        {
             return await providerByCountyCode.SendAsync(to, from, message, cancellationToken);
-        }
 
         var defaultProvider = _providers.FirstOrDefault(q => q.Provider == _settings.DefaultProvider);
         if (defaultProvider != null)
