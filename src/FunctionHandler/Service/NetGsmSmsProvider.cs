@@ -16,7 +16,7 @@ public class NetGsmSmsProvider : ISmsProvider
 
     public Providers Provider => Providers.NetGsm;
 
-    public IProviderSettings ProviderSettings => _settings.Twilio;
+    public IProviderSettings ProviderSettings => _settings.NetGsm;
 
     public async Task<bool> SendAsync(string to, string from, string message, CancellationToken cancellationToken)
     {
