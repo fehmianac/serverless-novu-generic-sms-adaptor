@@ -39,9 +39,20 @@ public class SmsSender : ISmsSender
     {
         Console.WriteLine(JsonSerializer.Serialize(_settings));
         var trimmedTo = to.TrimStart('+');
-        var providerByCountyCode =
-            _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Any(x => trimmedTo.StartsWith(x)));
+        Console.WriteLine(trimmedTo);
+        var providerByCountyCode = _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Any(x => trimmedTo.StartsWith(x)));
 
+        if (providerByCountyCode == null)
+        {
+            Console.WriteLine("Provider not found by country code");
+        }
+        else
+        {
+            Console.WriteLine("Provider found by country code");
+            Console.WriteLine(JsonSerializer.Serialize(providerByCountyCode));
+        }
+        
+        
         if (providerByCountyCode == null)
             providerByCountyCode = _providers.FirstOrDefault(q => q.ProviderSettings.AllowedCountryCodes.Contains("*"));
 
