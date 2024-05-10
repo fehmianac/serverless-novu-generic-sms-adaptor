@@ -10,6 +10,16 @@ Parameters:
     Type: String
     Default: 'aws-websockets-adaptor'
     Description: (Required) The name of the S3 bucket where the Lambda function code is stored. Minimum 3 characters
+ 
+  ExposeType:
+    Type: String
+    Default: 'FunctionUrl'
+    AllowedValues: ['FunctionUrl', 'ApiGateway']
+    Description: (Required) The type of exposure for the API. FunctionUrl or ApiGateway
+
+Conditions:
+  IsFunctionUrlAuth: !Equals [!Ref ExposeType, "FunctionUrl"]
+  IsApiGatewayAuth: !Equals [!Ref ExposeType, "ApiGateway"]
 
 Resources:
   GenericSmsAdapterApi:
@@ -17,7 +27,8 @@ Resources:
     Properties:
       Name: generic-sms-adapter-api
       ProtocolType: HTTP
-
+    Condition: IsApiGatewayAuth
+    
   ProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -29,7 +40,8 @@ Resources:
         - '/'
         - - 'integrations'
           - !Ref ProxyRouteAnyMethod
-  
+    Condition: IsApiGatewayAuth
+    
   ProxyRouteAnyMethod:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -40,7 +52,7 @@ Resources:
       IntegrationUri:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenericSmsAdapterApiLambdaFunction.Arn}/invocations
-  
+    Condition: IsApiGatewayAuth
   
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
@@ -48,7 +60,8 @@ Resources:
       - ProxyRoute
     Properties:
       ApiId: !Ref GenericSmsAdapterApi
-  
+    Condition: IsApiGatewayAuth
+    
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
@@ -56,7 +69,17 @@ Resources:
       Description: Prod Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref GenericSmsAdapterApi
-  
+    Condition: IsApiGatewayAuth
+    
+  GenericSmsAdapterApiLambdaFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - GenericSmsAdapterApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GenericSmsAdapterApiLambdaFunction
+      Principal: apigateway.amazonaws.com
+    Condition: IsApiGatewayAuth
   
   GenericSmsAdapterApiLambdaFunction:
     Type: AWS::Serverless::Function
@@ -70,22 +93,29 @@ Resources:
       MemorySize: 512
       Timeout: 180
       Runtime: dotnet8
+      
+  GenericSmsAdapterApiLambdaFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      AuthType: NONE
+      TargetFunctionArn: !Ref GenericSmsAdapterApiLambdaFunction
+    Condition: IsFunctionUrlAuth
   
+  GenericSmsAdapterApiLambdaFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - GenericSmsAdapterApiLambdaFunction
+    Properties:
+      Action: lambda:InvokeFunctionUrl
+      FunctionName: !Ref GenericSmsAdapterApiLambdaFunction
+      FunctionUrlAuthType: 'NONE'
+      Principal: "*"  
   GenericSmsAdapterApiLambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/GenericSmsAdapterApiLambdaFunction"
       RetentionInDays: 14
   
-  GenericSmsAdapterApiLambdaFunctionPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - GenericSmsAdapterApi
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref GenericSmsAdapterApiLambdaFunction
-      Principal: apigateway.amazonaws.com
-
   GenericSmsAdapterApiLambdaFunctionExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -132,10 +162,5 @@ Resources:
     Properties:
       Name: /generic-sms-adapter/Settings
       Type: String
-      Value: '{"ApiKey":"api-key","DefaultProvider":"NetGsm","Twilio":{"AccountSid":"account-sid","AuthToken":"auth-token","IsEnabled":true,"AllowedCountryCodes":[]},"NetGsm":{"BaseUrl":"https://api.netgsm.com.tr/","Username":"","Password":"","IsEnabled":true,"AllowedCountryCodes":[]}}'
+      Value: '{"ApiKey":"api-key","DefaultProvider":"NetGsm","Twilio":{"AccountSid":"account-sid","AuthToken":"auth-token","From":"","IsEnabled":true,"AllowedCountryCodes":[]},"NetGsm":{"BaseUrl":"https://api.netgsm.com.tr/","Username":"","Password":"","IsEnabled":true,"AllowedCountryCodes":[]}}'
       Description: GenericSmsAdapterApiSettings
-
-Outputs:
-  GenericSmsAdapterApiURI:
-    Description: "The Rest URI to connect to"
-    Value: !Join [ '', [ 'https://', !Ref GenericSmsAdapterApi, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/','prod' ] ]

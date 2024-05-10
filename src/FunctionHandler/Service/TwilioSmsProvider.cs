@@ -23,9 +23,14 @@ public class TwilioSmsProvider : ISmsProvider
 
         TwilioClient.Init(username: userName, password: password);
 
+        var fromPhone = new Twilio.Types.PhoneNumber(from);
+        if (!string.IsNullOrEmpty(_settings.Twilio.From))
+        {
+            fromPhone = new Twilio.Types.PhoneNumber(_settings.Twilio.From);
+        }
         var twilioMessage = await MessageResource.CreateAsync(
             body: message,
-            from: new Twilio.Types.PhoneNumber(from),
+            from: fromPhone,
             to: new Twilio.Types.PhoneNumber(to)
         );
         
